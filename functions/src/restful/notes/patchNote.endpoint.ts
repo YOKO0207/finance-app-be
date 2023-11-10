@@ -56,7 +56,6 @@ export default new Endpoint(
 					.send({ error: "You do not have permission to update this note" });
 			}
 
-			// update the note
 			await noteRef.update(request.body);
 
 			return response.status(200).send({

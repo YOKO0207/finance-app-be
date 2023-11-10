@@ -8,9 +8,7 @@ interface NoteRequestBody {
 	note_title: string;
 	person_name: string;
 }
-interface NoteSetBody {
-	note_title: string;
-	person_name: string;
+interface NoteSetBody extends NoteRequestBody {
 	uid: string;
 }
 
