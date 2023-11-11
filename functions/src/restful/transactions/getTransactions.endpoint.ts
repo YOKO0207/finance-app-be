@@ -60,7 +60,7 @@ export default new Endpoint(
 			const transactionRef = noteRef.collection("transactions");
 			const transactionsQuerySnapshot = await transactionRef.where("uid", "==", uid).get();
 
-			// map transactions
+			// create transactions array
 				const transactions: Transactions[] = transactionsQuerySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				amount: doc.data().amount,

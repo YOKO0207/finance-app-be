@@ -28,16 +28,6 @@ export default new Endpoint(
 			return response.status(401).send({ error: "No token provided" });
 		}
 
-		// validata body
-		const validation = transactionUpdateSchema.validate(request.body, {
-			abortEarly: false,
-		});
-		if (validation.error) {
-			return response.status(400).send({
-				error: validation.error.details.map((detail) => detail.message),
-			});
-		}
-
 		// check if noteId is included in the request params
 		const noteId = request.params.noteId;
 		if (!noteId) {
@@ -50,8 +40,18 @@ export default new Endpoint(
 			return response.status(400).send({ error: "Transaction ID is required" });
 		}
 
+		// validata body
+		const validation = transactionUpdateSchema.validate(request.body, {
+			abortEarly: false,
+		});
+		if (validation.error) {
+			return response.status(400).send({
+				error: validation.error.details.map((detail) => detail.message),
+			});
+		}
+
 		try {
-			// verify token
+			// get uid from token
 			const decodedToken = await admin.auth().verifyIdToken(token);
 			const uid = decodedToken.uid;
 
@@ -68,10 +68,12 @@ export default new Endpoint(
 			if (noteData?.uid !== uid) {
 				return response
 					.status(403)
-					.send({ error: "You do not have permission to update this transaction" });
+					.send({
+						error: "You do not have permission to update this transaction",
+					});
 			}
 
-			// check if the transaction exists and belongs to the user
+			// check if the transaction exists
 			const transactionRef = noteRef
 				.collection("transactions")
 				.doc(transactionId);
@@ -86,12 +88,15 @@ export default new Endpoint(
 			if (transactionData?.uid !== uid) {
 				return response
 					.status(403)
-					.send({ error: "You do not have permission to update this transaction" });
+					.send({
+						error: "You do not have permission to update this transaction",
+					});
 			}
 
 			// update the transaction
 			await transactionRef.update(request.body);
 
+			// return response
 			return response.status(200).send({
 				message: "Record updated",
 			});

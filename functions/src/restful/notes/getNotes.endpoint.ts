@@ -26,20 +26,24 @@ export default new Endpoint(
 		}
 
 		try {
+			// get uid from token
 			const decodedToken = await admin.auth().verifyIdToken(token);
 			const uid = decodedToken.uid;
 
+			// query notes
 			const notesQuerySnapshot = await db
 				.collection("notes")
 				.where("uid", "==", uid)
 				.get();
 
+			// create notes array
 			const notes: Notes[] = notesQuerySnapshot.docs.map((doc) => ({
 				id: doc.id,
 				note_title: doc.data().note_title,
 				person_name: doc.data().person_name,
 			}));
 
+			// return success response
 			return response.status(201).send({
 				message: "Record Retrieved",
 				data: notes,

@@ -33,7 +33,7 @@ export default new Endpoint(
 		}
 
 		try {
-			// verify token
+			// get uid from token
 			const decodedToken = await admin.auth().verifyIdToken(token);
 			const uid = decodedToken.uid;
 
@@ -50,7 +50,9 @@ export default new Endpoint(
 			if (noteData?.uid !== uid) {
 				return response
 					.status(403)
-					.send({ error: "You do not have permission to delete this transaction" });
+					.send({
+						error: "You do not have permission to delete this transaction",
+					});
 			}
 
 			// check if the transanction exists
@@ -68,12 +70,15 @@ export default new Endpoint(
 			if (transactionData?.uid !== uid) {
 				return response
 					.status(403)
-					.send({ error: "You do not have permission to delete this transaction" });
+					.send({
+						error: "You do not have permission to delete this transaction",
+					});
 			}
 
 			// delete the transaction
 			await transactionRef.delete();
 
+			// return response
 			return response.status(200).send({
 				message: "Record Deleted",
 			});

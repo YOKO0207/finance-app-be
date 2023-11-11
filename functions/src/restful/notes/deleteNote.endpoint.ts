@@ -20,19 +20,24 @@ export default new Endpoint(
 			return response.status(401).send({ error: "No token provided" });
 		}
 
+		// check if noteId is included in the request params
+		const noteId = request.params.noteId;
+		if (!noteId) {
+			return response.status(400).send({ error: "Note ID is required" });
+		}
+
 		try {
-			// verify token
+			// get uid from token
 			const decodedToken = await admin.auth().verifyIdToken(token);
 			const uid = decodedToken.uid;
 
-			// check if the note exists and belongs to the user
-			const noteId = request.params.id;
+			// check if the note exists
 			const noteRef = db.collection("notes").doc(noteId);
 			const noteSnapshot = await noteRef.get();
-
 			if (!noteSnapshot.exists) {
 				return response.status(404).send({ error: "Note not found" });
 			}
+			// check if the note belongs to the user
 			const noteData = noteSnapshot.data();
 			if (noteData?.uid !== uid) {
 				return response
@@ -40,9 +45,10 @@ export default new Endpoint(
 					.send({ error: "You do not have permission to delete this note" });
 			}
 
-			// update the note
+			// delete the note
 			await noteRef.delete();
 
+			// return success response
 			return response.status(200).send({
 				message: "Record Deleted",
 			});

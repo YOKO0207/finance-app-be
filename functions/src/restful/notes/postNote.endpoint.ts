@@ -45,19 +45,22 @@ export default new Endpoint(
 		}
 
 		try {
+			// get uid from token
+			const decodedToken = await admin.auth().verifyIdToken(token);
+			const uid = decodedToken.uid;
+
+			// create note object with uid
 			const noteRequestBody: NoteRequestBody = {
 				note_title: request.body["note_title"],
 				person_name: request.body["person_name"],
 			};
-
-			const decodedToken = await admin.auth().verifyIdToken(token);
-			const uid = decodedToken.uid;
-
 			const note: NoteSetBody = { ...noteRequestBody, uid };
 
+			// create note
 			const noteRef = db.collection("notes").doc();
 			await noteRef.set(note);
 
+			// return response
 			return response.status(201).send({
 				message: "Record created",
 			});
