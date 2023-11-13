@@ -17,7 +17,7 @@ if (!admin.apps.length) {
 const db = admin.firestore();
 
 export default new Endpoint(
-	"note/:id",
+	"notes/:noteId",
 	RequestType.GET,
 	async (request: Request, response: Response) => {
 		// check if token is included in the request header

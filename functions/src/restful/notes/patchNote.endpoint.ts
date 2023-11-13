@@ -17,7 +17,7 @@ const noteUpdateSchema = Joi.object({
 });
 
 export default new Endpoint(
-	"note/:id",
+	"notes/:noteId",
 	RequestType.PATCH,
 	async (request: Request, response: Response) => {
 		// check if token is included in the request header
