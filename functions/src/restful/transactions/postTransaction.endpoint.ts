@@ -3,10 +3,14 @@ import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import * as Joi from "joi";
+import { OPEN_EXCHANGE_URL } from "../../constant";
+import axios from "axios";
+import * as functions from "firebase-functions";
+const apiKey = functions.config().open_exchanging_rate.api_key;
 
 interface TransactionRequestBody {
-	amount: string;
-	currency_type: number;
+	amount: number;
+	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
 }
@@ -25,7 +29,7 @@ const db = admin.firestore();
 // create schema for request body
 const transactionCreateSchema = Joi.object({
 	amount: Joi.number().required(),
-	currency_type: Joi.number().required(),
+	currency_type: Joi.string().required(),
 	transaction_type: Joi.number().required(),
 	transaction_desctiption: Joi.string(),
 });
@@ -77,14 +81,33 @@ export default new Endpoint(
 					.send({ error: "You do not have permission to create on this note" });
 			}
 
-			// create transaction object with uid
+			// Get exchange rates from Open Exchange Rates API
+			const exchangeRatesResponse = await axios.get(
+				`${OPEN_EXCHANGE_URL}/latest.json?app_id=${apiKey}`
+			);
+			const rates = exchangeRatesResponse.data.rates;
+
+			// Convert amount to dollars
+			const amountInOriginalCurrency = request.body.amount;
+			const currencyType = request.body.currency_type;
+			const exchangeRate = rates[currencyType];
+			// Make sure this is a valid currency code
+			if (!exchangeRate) {
+				return response.status(400).send({ error: "Invalid currency type" });
+			}
+			const amountInUSD = amountInOriginalCurrency / exchangeRate;
+
+			//create transaction object with uid
 			const transactionRequestBody: TransactionRequestBody = {
-				amount: request.body["amount"],
+				amount: Number(amountInUSD.toFixed(2)),
 				currency_type: request.body["currency_type"],
 				transaction_type: request.body["transaction_type"],
 				transaction_desctiption: request.body["transaction_desctiption"],
 			};
-			const transaction: TransactionSetBody = {...transactionRequestBody, uid};
+			const transaction: TransactionSetBody = {
+				...transactionRequestBody,
+				uid,
+			};
 
 			// create transaction
 			const transactionRef = noteRef.collection("transactions").doc();
@@ -94,7 +117,6 @@ export default new Endpoint(
 			return response.status(201).send({
 				message: "Record created",
 			});
-
 		} catch (error) {
 			console.log("Error", error);
 			const { message, status } = handleFirebaseError(error);
