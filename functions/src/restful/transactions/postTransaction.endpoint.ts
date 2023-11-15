@@ -6,6 +6,8 @@ import * as Joi from "joi";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
+import * as Firestore from "firebase-admin/firestore";
+
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
 interface TransactionRequestBody {
@@ -16,6 +18,8 @@ interface TransactionRequestBody {
 }
 interface TransactionSetBody extends TransactionRequestBody {
 	uid: string;
+	created_at: admin.firestore.FieldValue | Date; 
+	updated_at: admin.firestore.FieldValue | Date; 
 }
 
 // Initialize Firebase Admin if not already initialized
@@ -104,9 +108,12 @@ export default new Endpoint(
 				transaction_type: request.body["transaction_type"],
 				transaction_desctiption: request.body["transaction_desctiption"],
 			};
+			
 			const transaction: TransactionSetBody = {
 				...transactionRequestBody,
 				uid,
+				created_at: Firestore.FieldValue.serverTimestamp(),
+				updated_at: Firestore.FieldValue.serverTimestamp(),
 			};
 
 			// create transaction
