@@ -10,12 +10,13 @@ import * as Firestore from "firebase-admin/firestore";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
-interface TransactionRequestBody {
+interface TransactionBody {
 	amount: number;
 	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
 	uid: string;
+	exchange_rate: number;
 	created_at: admin.firestore.FieldValue | Date; 
 	updated_at: admin.firestore.FieldValue | Date;
 }
@@ -100,19 +101,20 @@ export default new Endpoint(
 			const amountInUSD = amountInOriginalCurrency / exchangeRate;
 
 			//create transaction object with uid
-			const transactionRequestBody: TransactionRequestBody = {
+			const transactionBody: TransactionBody = {
 				amount: Number(amountInUSD.toFixed(2)),
 				currency_type: request.body.currency_type,
 				transaction_type: request.body.transaction_type,
 				transaction_desctiption: request.body.transaction_desctiption,
 				uid,
+				exchange_rate: exchangeRate,
 				created_at: Firestore.FieldValue.serverTimestamp(),
 				updated_at: Firestore.FieldValue.serverTimestamp(),
 			};
 
 			// create transaction
 			const transactionRef = noteRef.collection("transactions").doc();
-			await transactionRef.set(transactionRequestBody);
+			await transactionRef.set(transactionBody);
 
 			// return response
 			return response.status(201).send({

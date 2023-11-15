@@ -13,6 +13,7 @@ interface TransactionRequestBody {
 	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
+	exchange_rate: number;
 	updated_at: admin.firestore.FieldValue | Date;
 }
 
@@ -105,6 +106,7 @@ export default new Endpoint(
 
 			// if currencty_type is changed, convert amount to dollars
 			let amountInUSD = request.body.amount;
+			let exchangeRate = request.body.exchange_rate;
 			if (
 				request.body.currency_type !== transactionData?.currency_type ||
 				request.body.amount !== transactionData?.amount
@@ -121,13 +123,12 @@ export default new Endpoint(
 				// Convert amount to dollars
 				const amountInOriginalCurrency = request.body.amount;
 				const currencyType = request.body.currency_type;
-				const exchangeRate = rates[currencyType];
+				exchangeRate = rates[currencyType];
 				// Make sure this is a valid currency code
 				if (!exchangeRate) {
 					return response.status(400).send({ error: "Invalid currency type" });
 				}
 				amountInUSD = amountInOriginalCurrency / exchangeRate;
-				request.body.amount = Number(amountInUSD.toFixed(2));
 			}
 
 			//create transaction object with uid
@@ -136,6 +137,7 @@ export default new Endpoint(
 				currency_type: request.body.currency_type,
 				transaction_type: request.body.transaction_type,
 				transaction_desctiption: request.body.transaction_desctiption,
+				exchange_rate: exchangeRate,
 				updated_at: Firestore.FieldValue.serverTimestamp(),
 			};
 
