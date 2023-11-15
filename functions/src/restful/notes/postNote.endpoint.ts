@@ -24,6 +24,7 @@ const db = admin.firestore();
 const noteCreateSchema = Joi.object({
 	note_title: Joi.string().required(),
 	person_name: Joi.string().required(),
+	currency_type: Joi.string().required(),
 
 });
 

@@ -10,5 +10,7 @@ node_modules/
 
 service-account-key.json
 
+.runtimeconfig.json
+
 .DS_Store
 ```

@@ -8,7 +8,7 @@ import axios from "axios";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import * as functions from "firebase-functions";
 
-interface TransactionRequestBody {
+interface TransactionBody {
 	amount: number;
 	currency_type: string;
 	transaction_type: number;
@@ -132,7 +132,7 @@ export default new Endpoint(
 			}
 
 			//create transaction object with uid
-			const transactionRequestBody: TransactionRequestBody = {
+			const transactionBody: TransactionBody = {
 				amount: Number(amountInUSD.toFixed(5)),
 				currency_type: request.body.currency_type,
 				transaction_type: request.body.transaction_type,
@@ -142,7 +142,7 @@ export default new Endpoint(
 			};
 
 			// update the transaction
-			await transactionRef.update({ ...transactionRequestBody });
+			await transactionRef.update({ ...transactionBody });
 
 			// return response
 			return response.status(200).send({

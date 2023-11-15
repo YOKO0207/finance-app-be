@@ -20,7 +20,8 @@ none
 			"id": 1,
 			"title": "title A",
 			"person_name": "Yamada Taro",
-			"totle_amount": 10000
+			"totle_amount": 10000,
+			"currency_type": "JPY"
 		}
 	]
 }
@@ -41,6 +42,7 @@ none
 {
 	"note_title": "title A",
 	"person_name": "Yamada Taro",
+	"currency_type": "JPY"
 }
 ```
 
@@ -55,7 +57,8 @@ none
 		"id": 1,
 		"note_title": "title A",
 		"person_name": "Yamada Taro",
-		"totle_amount": 0
+		"totle_amount": 0,
+		"currency_type": "JPY"
 	}
 }
 ```
@@ -75,6 +78,7 @@ none
 {
 	"note_title": "title A",
 	"person_name": "Yamada Taro",
+	"currency_type": "JPY"
 }
 ```
 
@@ -89,7 +93,8 @@ none
 		"id": 1,
 		"note_title": "title A",
 		"person_name": "Yamada Taro",
-		"totle_amount": 0
+		"totle_amount": 0,
+		"currency_type": "JPY"
 	}
 }
 ```
@@ -130,7 +135,7 @@ none
 			"id": 1,
 			"created_at": "2023.01.01 00:00",
 			"amount": 10000,
-			"currency_type": 1,
+			"currency_type": "AUD",
 			"transaction_type": 1,
 			"transaction_desctiption": "Dinner"
 		}
@@ -152,7 +157,7 @@ none
 
 {
 	"amount": 10000,
-	"currency_type": 1,
+	"currency_type": "AUD",
 	"transaction_type": 1,
 	"transaction_desctiption": "Dinner"
 }
@@ -169,7 +174,7 @@ none
 		"id": 1,
 		"created_at": "2023.01.01 00:00",
 		"amount": 10000,
-		"currency_type": 1,
+		"currency_type": "AUD",
 		"transaction_type": 1,
 		"transaction_desctiption": "Dinner"
 	}
@@ -190,7 +195,7 @@ none
 
 {
 	"amount": 10000,
-	"currency_type": 1,
+	"currency_type": "AUD",
 	"transaction_type": 1,
 	"transaction_desctiption": "Dinner"
 }
@@ -207,7 +212,7 @@ none
 		"id": 1,
 		"created_at": "2023.01.01 00:00",
 		"amount": 10000,
-		"currency_type": 1,
+		"currency_type": "AUD",
 		"transaction_type": 1,
 		"transaction_desctiption": "Dinner"
 	}
@@ -231,8 +236,4 @@ none
 	"message": "Deleted successfully",
 }
 ```
-
-
-
-
 
