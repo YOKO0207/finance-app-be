@@ -5,8 +5,8 @@ import { handleFirebaseError } from "../../util";
 
 interface Transaction {
 	id: string;
-	amount: string;
-	currency_type: number;
+	amount: number;
+	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
 }
@@ -56,11 +56,9 @@ export default new Endpoint(
 			// check if note belongs to the user
 			const noteData = noteSnapshot.data();
 			if (noteData?.uid !== uid) {
-				return response
-					.status(403)
-					.send({
-						error: "You do not have permission to get this transaction",
-					});
+				return response.status(403).send({
+					error: "You do not have permission to get this transaction",
+				});
 			}
 
 			// check if the transanction exists
@@ -76,17 +74,19 @@ export default new Endpoint(
 			// check if transaction belongs to the user
 			const transactionData = transactionSnapshot.data();
 			if (transactionData?.uid !== uid) {
-				return response
-					.status(403)
-					.send({
-						error: "You do not have permission to get this transaction",
-					});
+				return response.status(403).send({
+					error: "You do not have permission to get this transaction",
+				});
 			}
+
+			// TODO convert amount to currency_type from dollars
 
 			// create transaction object
 			const transaction: Transaction = {
 				id: transactionSnapshot.id,
-				amount: transactionSnapshot.data()?.amount,
+				amount:
+					Math.round(transactionSnapshot.data()?.amount *
+					transactionSnapshot.data()?.exchange_rate),
 				currency_type: transactionSnapshot.data()?.currency_type,
 				transaction_type: transactionSnapshot.data()?.transaction_type,
 				transaction_desctiption:

@@ -5,8 +5,8 @@ import { handleFirebaseError } from "../../util";
 
 interface Transactions {
 	id: string;
-	amount: string;
-	currency_type: number;
+	amount: number;
+	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
 }
@@ -60,10 +60,14 @@ export default new Endpoint(
 			const transactionRef = noteRef.collection("transactions");
 			const transactionsQuerySnapshot = await transactionRef.where("uid", "==", uid).get();
 
+			// convert amount to currency_type from dollars
+			
 			// create transactions array
 				const transactions: Transactions[] = transactionsQuerySnapshot.docs.map((doc) => ({
 				id: doc.id,
-				amount: doc.data().amount,
+				amount:
+					Math.round(doc.data().amount *
+					doc.data().exchange_rate),
 				currency_type: doc.data().currency_type,
 				transaction_type: doc.data().transaction_type,
 				transaction_desctiption: doc.data().transaction_desctiption,
