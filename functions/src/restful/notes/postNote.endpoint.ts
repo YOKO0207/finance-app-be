@@ -3,13 +3,15 @@ import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import * as Joi from "joi";
+import * as Firestore from "firebase-admin/firestore";
 
-interface NoteRequestBody {
+interface NoteBody {
 	note_title: string;
 	person_name: string;
-}
-interface NoteSetBody extends NoteRequestBody {
+	currency_type: string;
 	uid: string;
+	created_at: admin.firestore.FieldValue | Date;
+	updated_at: admin.firestore.FieldValue | Date;
 }
 
 // Initialize Firebase Admin if not already initialized
@@ -22,6 +24,7 @@ const db = admin.firestore();
 const noteCreateSchema = Joi.object({
 	note_title: Joi.string().required(),
 	person_name: Joi.string().required(),
+
 });
 
 export default new Endpoint(
@@ -50,15 +53,18 @@ export default new Endpoint(
 			const uid = decodedToken.uid;
 
 			// create note object with uid
-			const noteRequestBody: NoteRequestBody = {
-				note_title: request.body["note_title"],
-				person_name: request.body["person_name"],
+			const noteBody: NoteBody = {
+				note_title: request.body.note_title,
+				person_name: request.body.person_name,
+				currency_type: request.body.currency_type,
+				uid,
+				created_at: Firestore.FieldValue.serverTimestamp(),
+				updated_at: Firestore.FieldValue.serverTimestamp(),
 			};
-			const note: NoteSetBody = { ...noteRequestBody, uid };
-
+			
 			// create note
 			const noteRef = db.collection("notes").doc();
-			await noteRef.set(note);
+			await noteRef.set(noteBody);
 
 			// return response
 			return response.status(201).send({

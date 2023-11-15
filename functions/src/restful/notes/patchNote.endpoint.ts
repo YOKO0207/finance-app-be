@@ -3,6 +3,14 @@ import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import * as Joi from "joi";
+import * as Firestore from "firebase-admin/firestore";
+
+interface NoteBody {
+	note_title: string;
+	person_name: string;
+	currency_type: string;
+	updated_at: admin.firestore.FieldValue | Date;
+}
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
@@ -14,6 +22,7 @@ const db = admin.firestore();
 const noteUpdateSchema = Joi.object({
 	note_title: Joi.string(),
 	person_name: Joi.string(),
+	currency_type: Joi.string(),
 });
 
 export default new Endpoint(
@@ -62,8 +71,16 @@ export default new Endpoint(
 					.send({ error: "You do not have permission to update this note" });
 			}
 
+			// create note object with uid
+			const noteBody: NoteBody = {
+				note_title: request.body.note_title,
+				person_name: request.body.person_name,
+				currency_type: request.body.currency_type,
+				updated_at: Firestore.FieldValue.serverTimestamp(),
+			};
+
 			// update the note
-			await noteRef.update(request.body);
+			await noteRef.update({ ...noteBody });
 
 			// return response
 			return response.status(200).send({
