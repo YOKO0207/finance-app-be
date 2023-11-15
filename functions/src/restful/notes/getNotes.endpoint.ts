@@ -51,20 +51,6 @@ export default new Endpoint(
 					.collection("transactions")
 					.get();
 
-				// query transactions and calculate total
-				// let total = 0.0;
-				// if (transactionsQuerySnapshot) {
-				// 	transactionsQuerySnapshot.forEach((transactionDoc) => {
-				// 		const amount = transactionDoc.data().amount;
-				// 		if (typeof amount === "number") {
-				// 			// TODO convert to currency type from dollars
-				// 			total += amount;
-				// 		}
-				// 	});
-
-				// 	total = parseFloat(total.toFixed(2));
-				// }
-
 				let total = 0;
 				if (transactionsQuerySnapshot) {
 					const exchangeRatesMap = new Map(); // Cache exchange rates
