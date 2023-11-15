@@ -3,6 +3,20 @@ import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import * as Joi from "joi";
+import * as Firestore from "firebase-admin/firestore";
+import axios from "axios";
+import { OPEN_EXCHANGE_URL } from "../../constant";
+import * as functions from "firebase-functions";
+
+interface TransactionRequestBody {
+	amount: number;
+	currency_type: string;
+	transaction_type: number;
+	transaction_desctiption: string;
+	updated_at: admin.firestore.FieldValue | Date;
+}
+
+const apiKey = functions.config().open_exchanging_rate.api_key;
 
 // Initialize Firebase Admin if not already initialized
 if (!admin.apps.length) {
@@ -13,7 +27,7 @@ const db = admin.firestore();
 
 const transactionUpdateSchema = Joi.object({
 	amount: Joi.number(),
-	currency_type: Joi.number(),
+	currency_type: Joi.string(),
 	transaction_type: Joi.number(),
 	transaction_desctiption: Joi.string(),
 });
@@ -66,11 +80,9 @@ export default new Endpoint(
 			// check if note belongs to the user
 			const noteData = noteSnapshot.data();
 			if (noteData?.uid !== uid) {
-				return response
-					.status(403)
-					.send({
-						error: "You do not have permission to update this transaction",
-					});
+				return response.status(403).send({
+					error: "You do not have permission to update this transaction",
+				});
 			}
 
 			// check if the transaction exists
@@ -86,15 +98,49 @@ export default new Endpoint(
 			// check if transaction belongs to the user
 			const transactionData = transactionSnapshot.data();
 			if (transactionData?.uid !== uid) {
-				return response
-					.status(403)
-					.send({
-						error: "You do not have permission to update this transaction",
-					});
+				return response.status(403).send({
+					error: "You do not have permission to update this transaction",
+				});
 			}
 
+			// if currencty_type is changed, convert amount to dollars
+			let amountInUSD = request.body.amount;
+			if (
+				request.body.currency_type !== transactionData?.currency_type ||
+				request.body.amount !== transactionData?.amount
+			) {
+				const firestoreTimestamp = transactionData?.created_at; // Firestore Timestamp
+				const dateObject = firestoreTimestamp.toDate();
+				const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
+				// Get exchange rates from Open Exchange Rates API
+				const exchangeRatesResponse = await axios.get(
+					`${OPEN_EXCHANGE_URL}/historical/${formattedDate}.json?app_id=${apiKey}`
+				);
+				const rates = exchangeRatesResponse.data.rates;
+
+				// Convert amount to dollars
+				const amountInOriginalCurrency = request.body.amount;
+				const currencyType = request.body.currency_type;
+				const exchangeRate = rates[currencyType];
+				// Make sure this is a valid currency code
+				if (!exchangeRate) {
+					return response.status(400).send({ error: "Invalid currency type" });
+				}
+				amountInUSD = amountInOriginalCurrency / exchangeRate;
+				request.body.amount = Number(amountInUSD.toFixed(2));
+			}
+
+			//create transaction object with uid
+			const transactionRequestBody: TransactionRequestBody = {
+				amount: Number(amountInUSD.toFixed(2)),
+				currency_type: request.body.currency_type,
+				transaction_type: request.body.transaction_type,
+				transaction_desctiption: request.body.transaction_desctiption,
+				updated_at: Firestore.FieldValue.serverTimestamp(),
+			};
+
 			// update the transaction
-			await transactionRef.update(request.body);
+			await transactionRef.update({ ...transactionRequestBody });
 
 			// return response
 			return response.status(200).send({

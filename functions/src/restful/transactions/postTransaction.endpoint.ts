@@ -15,11 +15,9 @@ interface TransactionRequestBody {
 	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
-}
-interface TransactionSetBody extends TransactionRequestBody {
 	uid: string;
 	created_at: admin.firestore.FieldValue | Date; 
-	updated_at: admin.firestore.FieldValue | Date; 
+	updated_at: admin.firestore.FieldValue | Date;
 }
 
 // Initialize Firebase Admin if not already initialized
@@ -104,13 +102,9 @@ export default new Endpoint(
 			//create transaction object with uid
 			const transactionRequestBody: TransactionRequestBody = {
 				amount: Number(amountInUSD.toFixed(2)),
-				currency_type: request.body["currency_type"],
-				transaction_type: request.body["transaction_type"],
-				transaction_desctiption: request.body["transaction_desctiption"],
-			};
-			
-			const transaction: TransactionSetBody = {
-				...transactionRequestBody,
+				currency_type: request.body.currency_type,
+				transaction_type: request.body.transaction_type,
+				transaction_desctiption: request.body.transaction_desctiption,
 				uid,
 				created_at: Firestore.FieldValue.serverTimestamp(),
 				updated_at: Firestore.FieldValue.serverTimestamp(),
@@ -118,7 +112,7 @@ export default new Endpoint(
 
 			// create transaction
 			const transactionRef = noteRef.collection("transactions").doc();
-			await transactionRef.set(transaction);
+			await transactionRef.set(transactionRequestBody);
 
 			// return response
 			return response.status(201).send({
