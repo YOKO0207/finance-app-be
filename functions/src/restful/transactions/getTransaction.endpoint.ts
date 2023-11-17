@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
+import { TRANSACTION_TYPES } from "../../constant/transactionType";
 
 interface Transaction {
 	id: string;
@@ -79,14 +80,17 @@ export default new Endpoint(
 				});
 			}
 
-			// TODO convert amount to currency_type from dollars
+			// calculate amount
+			let amount = Math.round(
+				transactionSnapshot.data()?.amount * transactionSnapshot.data()?.exchange_rate
+			);
+			if (transactionSnapshot.data()?.transaction_type === TRANSACTION_TYPES.MINUS)
+				amount = 0 - amount;
 
 			// create transaction object
 			const transaction: Transaction = {
 				id: transactionSnapshot.id,
-				amount:
-					Math.round(transactionSnapshot.data()?.amount *
-					transactionSnapshot.data()?.exchange_rate),
+				amount,
 				currency_type: transactionSnapshot.data()?.currency_type,
 				transaction_type: transactionSnapshot.data()?.transaction_type,
 				transaction_desctiption:

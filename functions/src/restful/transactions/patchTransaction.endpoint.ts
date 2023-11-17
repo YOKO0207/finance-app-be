@@ -133,7 +133,7 @@ export default new Endpoint(
 
 			//create transaction object with uid
 			const transactionBody: TransactionBody = {
-				amount: Number(amountInUSD.toFixed(5)),
+				amount: Number(amountInUSD.toFixed(15)),
 				currency_type: request.body.currency_type,
 				transaction_type: request.body.transaction_type,
 				transaction_desctiption: request.body.transaction_desctiption,

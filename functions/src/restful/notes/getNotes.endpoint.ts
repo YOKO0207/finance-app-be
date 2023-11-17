@@ -5,6 +5,7 @@ import { handleFirebaseError } from "../../util";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
+import { TRANSACTION_TYPES } from "../../constant/transactionType";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -80,7 +81,10 @@ export default new Endpoint(
 							}
 
 							let amountInCurrencyType = amountInDollars * exchangeRate;
-							total += amountInCurrencyType;
+							if (doc.data().transaction_type === TRANSACTION_TYPES.PLUS)
+								total += amountInCurrencyType;
+							else if (doc.data().transaction_type === TRANSACTION_TYPES.MINUS)
+								total -= amountInCurrencyType;
 						}
 					}
 					total = Math.round(total);

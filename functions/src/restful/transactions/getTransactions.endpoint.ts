@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
+import { TRANSACTION_TYPES } from "../../constant/transactionType";
 
 interface Transactions {
 	id: string;
@@ -9,6 +10,7 @@ interface Transactions {
 	currency_type: string;
 	transaction_type: number;
 	transaction_desctiption: string;
+	created_at: string;
 }
 
 // Initialize Firebase Admin if not already initialized
@@ -58,27 +60,38 @@ export default new Endpoint(
 
 			// query transactions
 			const transactionRef = noteRef.collection("transactions");
-			const transactionsQuerySnapshot = await transactionRef.where("uid", "==", uid).get();
+			const transactionsQuerySnapshot = await transactionRef
+				.where("uid", "==", uid)
+				.get();
 
-			// convert amount to currency_type from dollars
 			
+
 			// create transactions array
-				const transactions: Transactions[] = transactionsQuerySnapshot.docs.map((doc) => ({
-				id: doc.id,
-				amount:
-					Math.round(doc.data().amount *
-					doc.data().exchange_rate),
-				currency_type: doc.data().currency_type,
-				transaction_type: doc.data().transaction_type,
-				transaction_desctiption: doc.data().transaction_desctiption,
-			}));
+			const transactions: Transactions[] = transactionsQuerySnapshot.docs.map(
+				(doc) => {
+					// get created_at and format it
+					const firestoreTimestamp = doc.data()?.created_at; // Firestore Timestamp
+					const dateObject = firestoreTimestamp.toDate();
+					const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
+
+					let amount = Math.round(doc.data().amount * doc.data().exchange_rate);
+					if (doc.data().transaction_type === TRANSACTION_TYPES.MINUS) amount = 0 - amount;
+
+					return {
+					id: doc.id,
+					amount,
+					currency_type: doc.data().currency_type,
+					transaction_type: doc.data().transaction_type,
+					transaction_desctiption: doc.data().transaction_desctiption,
+					created_at: formattedDate
+				}}
+			);
 
 			// return response
 			return response.status(201).send({
 				message: "Records Retrieved",
 				data: transactions,
 			});
-
 		} catch (error) {
 			console.log("Error", error);
 			const { message, status } = handleFirebaseError(error);
