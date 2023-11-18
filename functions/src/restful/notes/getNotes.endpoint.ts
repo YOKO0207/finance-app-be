@@ -5,7 +5,7 @@ import { handleFirebaseError } from "../../util";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
-import { TRANSACTION_TYPES } from "../../constant/transactionType";
+import { SIGNS } from "../../constant/signs";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -14,6 +14,7 @@ interface Notes {
 	note_title: string;
 	person_name: string;
 	total: number;
+	sign: number;
 	currency_type: number;
 }
 // Initialize Firebase Admin if not already initialized
@@ -81,13 +82,18 @@ export default new Endpoint(
 							}
 
 							let amountInCurrencyType = amountInDollars * exchangeRate;
-							if (doc.data().transaction_type === TRANSACTION_TYPES.PLUS)
-								total += amountInCurrencyType;
-							else if (doc.data().transaction_type === TRANSACTION_TYPES.MINUS)
+							if (doc.data().sign === SIGNS.PLUS) total += amountInCurrencyType;
+							else if (doc.data().sign === SIGNS.MINUS)
 								total -= amountInCurrencyType;
 						}
 					}
 					total = Math.round(total);
+				}
+
+				let sign = SIGNS.PLUS;
+				if (total < 0) {
+					total = Math.abs(total);
+					sign = SIGNS.MINUS;
 				}
 
 				return {
@@ -95,7 +101,8 @@ export default new Endpoint(
 					note_title: doc.data().note_title,
 					person_name: doc.data().person_name,
 					currency_type: doc.data().currency_type,
-					total: total || 0.0,
+					total,
+					sign,
 				};
 			});
 

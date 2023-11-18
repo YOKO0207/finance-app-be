@@ -2,13 +2,12 @@ import { Request, Response } from "express";
 import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
-import { TRANSACTION_TYPES } from "../../constant/transactionType";
 
 interface Transaction {
 	id: string;
 	amount: number;
 	currency_type: string;
-	transaction_type: number;
+	sign: number;
 	transaction_desctiption: string;
 }
 
@@ -81,18 +80,17 @@ export default new Endpoint(
 			}
 
 			// calculate amount
-			let amount = Math.round(
-				transactionSnapshot.data()?.amount * transactionSnapshot.data()?.exchange_rate
+			const amount = Math.round(
+				transactionSnapshot.data()?.amount *
+					transactionSnapshot.data()?.exchange_rate
 			);
-			if (transactionSnapshot.data()?.transaction_type === TRANSACTION_TYPES.MINUS)
-				amount = 0 - amount;
 
 			// create transaction object
 			const transaction: Transaction = {
 				id: transactionSnapshot.id,
 				amount,
 				currency_type: transactionSnapshot.data()?.currency_type,
-				transaction_type: transactionSnapshot.data()?.transaction_type,
+				sign: transactionSnapshot.data()?.sign,
 				transaction_desctiption:
 					transactionSnapshot.data()?.transaction_desctiption,
 			};

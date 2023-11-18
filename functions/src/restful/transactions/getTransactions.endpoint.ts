@@ -2,13 +2,14 @@ import { Request, Response } from "express";
 import { Endpoint, RequestType } from "firebase-backend";
 import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
-import { TRANSACTION_TYPES } from "../../constant/transactionType";
+import { utcToZonedTime, format } from "date-fns-tz";
+import ja from "date-fns/locale/ja";
 
 interface Transactions {
 	id: string;
 	amount: number;
 	currency_type: string;
-	transaction_type: number;
+	sign: number;
 	transaction_desctiption: string;
 	created_at: string;
 }
@@ -64,27 +65,30 @@ export default new Endpoint(
 				.where("uid", "==", uid)
 				.get();
 
-			
-
 			// create transactions array
 			const transactions: Transactions[] = transactionsQuerySnapshot.docs.map(
 				(doc) => {
 					// get created_at and format it
 					const firestoreTimestamp = doc.data()?.created_at; // Firestore Timestamp
 					const dateObject = firestoreTimestamp.toDate();
-					const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
-
-					let amount = Math.round(doc.data().amount * doc.data().exchange_rate);
-					if (doc.data().transaction_type === TRANSACTION_TYPES.MINUS) amount = 0 - amount;
+					const timeZone = "Asia/Tokyo";
+					const japanTime = utcToZonedTime(dateObject, timeZone);
+					const formattedDate = format(japanTime, "yyyy年MM月dd日 HH時mm分", {
+						locale: ja,
+					});
+					const amount = Math.round(
+						doc.data().amount * doc.data().exchange_rate
+					);
 
 					return {
-					id: doc.id,
-					amount,
-					currency_type: doc.data().currency_type,
-					transaction_type: doc.data().transaction_type,
-					transaction_desctiption: doc.data().transaction_desctiption,
-					created_at: formattedDate
-				}}
+						id: doc.id,
+						amount,
+						currency_type: doc.data().currency_type,
+						sign: doc.data().sign,
+						transaction_desctiption: doc.data().transaction_desctiption,
+						created_at: formattedDate,
+					};
+				}
 			);
 
 			// return response

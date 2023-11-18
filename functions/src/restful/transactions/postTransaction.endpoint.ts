@@ -13,11 +13,11 @@ const apiKey = functions.config().open_exchanging_rate.api_key;
 interface TransactionBody {
 	amount: number;
 	currency_type: string;
-	transaction_type: number;
+	sign: number;
 	transaction_desctiption: string;
 	uid: string;
 	exchange_rate: number;
-	created_at: admin.firestore.FieldValue | Date; 
+	created_at: admin.firestore.FieldValue | Date;
 	updated_at: admin.firestore.FieldValue | Date;
 }
 
@@ -33,7 +33,7 @@ const db = admin.firestore();
 const transactionCreateSchema = Joi.object({
 	amount: Joi.number().required(),
 	currency_type: Joi.string().required(),
-	transaction_type: Joi.number().required(),
+	sign: Joi.number().required(),
 	transaction_desctiption: Joi.string(),
 });
 
@@ -104,7 +104,7 @@ export default new Endpoint(
 			const transactionBody: TransactionBody = {
 				amount: Number(amountInUSD.toFixed(15)),
 				currency_type: request.body.currency_type,
-				transaction_type: request.body.transaction_type,
+				sign: request.body.sign,
 				transaction_desctiption: request.body.transaction_desctiption,
 				uid,
 				exchange_rate: exchangeRate,

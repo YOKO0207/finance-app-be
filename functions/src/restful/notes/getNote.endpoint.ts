@@ -5,7 +5,7 @@ import { handleFirebaseError } from "../../util";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
-import { TRANSACTION_TYPES } from "../../constant/transactionType";
+import { SIGNS } from "../../constant/signs";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -14,6 +14,7 @@ interface Note {
 	note_title: string;
 	person_name: string;
 	total: number;
+	sign: number;
 	currency_type: string;
 }
 
@@ -61,7 +62,9 @@ export default new Endpoint(
 
 			// query transactions and calculate total
 			const transactionRef = noteRef.collection("transactions");
-			const transactionsQuerySnapshot = await transactionRef.where("uid", "==", uid).get();
+			const transactionsQuerySnapshot = await transactionRef
+				.where("uid", "==", uid)
+				.get();
 			let total = 0;
 			if (transactionsQuerySnapshot) {
 				const exchangeRatesMap = new Map(); // Cache exchange rates
@@ -92,13 +95,17 @@ export default new Endpoint(
 						}
 
 						let amountInCurrencyType = amountInDollars * exchangeRate;
-						if (doc.data().transaction_type === TRANSACTION_TYPES.PLUS)
-							total += amountInCurrencyType;
-						else if (doc.data().transaction_type === TRANSACTION_TYPES.MINUS)
-							total -= amountInCurrencyType;
+						if (doc.data().sign === SIGNS.PLUS) total += amountInCurrencyType;
+						else if (doc.data().sign === SIGNS.MINUS) total -= amountInCurrencyType;
 					}
 				}
 				total = Math.round(total);
+			}
+
+			let sign = SIGNS.PLUS;
+			if (total < 0) {
+				total = Math.abs(total)
+				sign = SIGNS.MINUS;
 			}
 
 			// create note object
@@ -106,7 +113,8 @@ export default new Endpoint(
 				id: noteSnapshot.id,
 				note_title: noteSnapshot.data()?.note_title,
 				person_name: noteSnapshot.data()?.person_name,
-				total: total,
+				total,
+				sign,
 				currency_type: noteSnapshot.data()?.currency_type,
 			};
 

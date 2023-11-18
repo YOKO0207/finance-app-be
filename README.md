@@ -136,7 +136,7 @@ none
 			"created_at": "2023.01.01 00:00",
 			"amount": 10000,
 			"currency_type": "AUD",
-			"transaction_type": 1,
+			"sign": 1,
 			"transaction_desctiption": "Dinner"
 		}
 	]
@@ -158,7 +158,7 @@ none
 {
 	"amount": 10000,
 	"currency_type": "AUD",
-	"transaction_type": 1,
+	"sign": 1,
 	"transaction_desctiption": "Dinner"
 }
 ```
@@ -175,7 +175,7 @@ none
 		"created_at": "2023.01.01 00:00",
 		"amount": 10000,
 		"currency_type": "AUD",
-		"transaction_type": 1,
+		"sign": 1,
 		"transaction_desctiption": "Dinner"
 	}
 }
@@ -196,7 +196,7 @@ none
 {
 	"amount": 10000,
 	"currency_type": "AUD",
-	"transaction_type": 1,
+	"sign": 1,
 	"transaction_desctiption": "Dinner"
 }
 ```
@@ -213,7 +213,7 @@ none
 		"created_at": "2023.01.01 00:00",
 		"amount": 10000,
 		"currency_type": "AUD",
-		"transaction_type": 1,
+		"sign": 1,
 		"transaction_desctiption": "Dinner"
 	}
 }

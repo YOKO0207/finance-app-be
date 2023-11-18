@@ -11,7 +11,7 @@ import * as functions from "firebase-functions";
 interface TransactionBody {
 	amount: number;
 	currency_type: string;
-	transaction_type: number;
+	sign: number;
 	transaction_desctiption: string;
 	exchange_rate: number;
 	updated_at: admin.firestore.FieldValue | Date;
@@ -29,7 +29,7 @@ const db = admin.firestore();
 const transactionUpdateSchema = Joi.object({
 	amount: Joi.number(),
 	currency_type: Joi.string(),
-	transaction_type: Joi.number(),
+	sign: Joi.number(),
 	transaction_desctiption: Joi.string(),
 });
 
@@ -135,7 +135,7 @@ export default new Endpoint(
 			const transactionBody: TransactionBody = {
 				amount: Number(amountInUSD.toFixed(15)),
 				currency_type: request.body.currency_type,
-				transaction_type: request.body.transaction_type,
+				sign: request.body.sign,
 				transaction_desctiption: request.body.transaction_desctiption,
 				exchange_rate: exchangeRate,
 				updated_at: Firestore.FieldValue.serverTimestamp(),
