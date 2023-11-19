@@ -71,19 +71,21 @@ export default new Endpoint(
 
 				for (const doc of transactionsQuerySnapshot.docs) {
 					if (typeof doc.data().amount === "number") {
-						const firestoreTimestamp = doc.data()?.created_at; // Firestore Timestamp
-						const dateObject = firestoreTimestamp.toDate();
-						const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
+						// const firestoreTimestamp = doc.data()?.created_at; // Firestore Timestamp
+						// const dateObject = firestoreTimestamp.toDate();
+						// const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
 
 						let rates;
-						if (exchangeRatesMap.has(formattedDate)) {
-							rates = exchangeRatesMap.get(formattedDate);
+						if (exchangeRatesMap.has(doc.data()?.historical_date)) {
+							rates = exchangeRatesMap.get(doc.data()?.historical_date);
 						} else {
 							const exchangeRatesResponse = await axios.get(
-								`${OPEN_EXCHANGE_URL}/historical/${formattedDate}.json?app_id=${apiKey}`
+								`${OPEN_EXCHANGE_URL}/historical/${
+									doc.data()?.historical_date
+								}.json?app_id=${apiKey}`
 							);
 							rates = exchangeRatesResponse.data.rates;
-							exchangeRatesMap.set(formattedDate, rates);
+							exchangeRatesMap.set(doc.data()?.historical_date, rates);
 						}
 
 						const amountInDollars = doc.data()?.amount;

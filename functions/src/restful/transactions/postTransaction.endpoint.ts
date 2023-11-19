@@ -7,6 +7,8 @@ import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
 import * as Firestore from "firebase-admin/firestore";
+import { format } from "date-fns-tz";
+import { subDays }from "date-fns";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -17,6 +19,7 @@ interface TransactionBody {
 	transaction_desctiption: string;
 	uid: string;
 	exchange_rate: number;
+	historical_date: string;
 	created_at: admin.firestore.FieldValue | Date;
 	updated_at: admin.firestore.FieldValue | Date;
 }
@@ -84,9 +87,13 @@ export default new Endpoint(
 					.send({ error: "You do not have permission to create on this note" });
 			}
 
+			const currentDate = new Date();
+			const oneDayBefore = subDays(currentDate, 1);
+			const historicalDate = format(oneDayBefore, "yyyy-MM-dd");
+
 			// Get exchange rates from Open Exchange Rates API
 			const exchangeRatesResponse = await axios.get(
-				`${OPEN_EXCHANGE_URL}/latest.json?app_id=${apiKey}`
+				`${OPEN_EXCHANGE_URL}/historical/${historicalDate}.json?app_id=${apiKey}`
 			);
 			const rates = exchangeRatesResponse.data.rates;
 
@@ -108,6 +115,7 @@ export default new Endpoint(
 				transaction_desctiption: request.body.transaction_desctiption,
 				uid,
 				exchange_rate: exchangeRate,
+				historical_date: historicalDate,
 				created_at: Firestore.FieldValue.serverTimestamp(),
 				updated_at: Firestore.FieldValue.serverTimestamp(),
 			};

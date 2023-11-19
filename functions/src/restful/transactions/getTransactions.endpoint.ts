@@ -61,9 +61,8 @@ export default new Endpoint(
 
 			// query transactions
 			const transactionRef = noteRef.collection("transactions");
-			const transactionsQuerySnapshot = await transactionRef
-				.where("uid", "==", uid)
-				.get();
+			const transactionsQuery = transactionRef.orderBy("created_at", "desc");
+			const transactionsQuerySnapshot = await transactionsQuery.get();
 
 			// create transactions array
 			const transactions: Transactions[] = transactionsQuerySnapshot.docs.map(

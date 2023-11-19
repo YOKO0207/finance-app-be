@@ -111,12 +111,12 @@ export default new Endpoint(
 				request.body.currency_type !== transactionData?.currency_type ||
 				request.body.amount !== transactionData?.amount
 			) {
-				const firestoreTimestamp = transactionData?.created_at; // Firestore Timestamp
-				const dateObject = firestoreTimestamp.toDate();
-				const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
+				// const firestoreTimestamp = transactionData?.created_at; // Firestore Timestamp
+				// const dateObject = firestoreTimestamp.toDate();
+				// const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
 				// Get exchange rates from Open Exchange Rates API
 				const exchangeRatesResponse = await axios.get(
-					`${OPEN_EXCHANGE_URL}/historical/${formattedDate}.json?app_id=${apiKey}`
+					`${OPEN_EXCHANGE_URL}/historical/${transactionData?.historical_date}.json?app_id=${apiKey}`
 				);
 				const rates = exchangeRatesResponse.data.rates;
 

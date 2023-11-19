@@ -18,6 +18,7 @@
     "axios": "^1.6.2",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
+    "firebase": "^10.6.0",
     "firebase-admin": "^11.5.0",
     "firebase-backend": "^0.2.5",
     "firebase-functions": "^4.2.0",
