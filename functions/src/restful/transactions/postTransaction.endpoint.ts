@@ -9,6 +9,7 @@ import * as functions from "firebase-functions";
 import * as Firestore from "firebase-admin/firestore";
 import { format } from "date-fns-tz";
 import { subDays }from "date-fns";
+import { FirebaseError } from "firebase/app";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -130,10 +131,16 @@ export default new Endpoint(
 			});
 		} catch (error) {
 			console.log("Error", error);
-			const { message, status } = handleFirebaseError(error);
-			return response.status(status).send({
-				error: message,
-			});
+			if (error instanceof FirebaseError) {
+				const { message, status } = handleFirebaseError(error);
+				return response.status(status).send({
+					error: message,
+				});
+			} else {
+				return response.status(500).send({
+					error: "Internal Server Error",
+				});
+			}
 		}
 	}
 );

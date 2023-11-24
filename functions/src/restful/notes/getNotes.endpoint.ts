@@ -6,6 +6,7 @@ import { OPEN_EXCHANGE_URL } from "../../constant";
 import axios from "axios";
 import * as functions from "firebase-functions";
 import { SIGNS } from "../../constant/signs";
+import { FirebaseError } from "firebase/app";
 
 const apiKey = functions.config().open_exchanging_rate.api_key;
 
@@ -78,13 +79,13 @@ export default new Endpoint(
 
 							const amountInDollars = doc.data()?.amount;
 							const currencyType = noteData?.currency_type;
-							let exchangeRate = rates[currencyType];
+							const exchangeRate = rates[currencyType];
 
 							if (!exchangeRate) {
 								throw new Error("Invalid currency type");
 							}
 
-							let amountInCurrencyType = amountInDollars * exchangeRate;
+							const amountInCurrencyType = amountInDollars * exchangeRate;
 							if (doc.data().sign === SIGNS.PLUS) total += amountInCurrencyType;
 							else if (doc.data().sign === SIGNS.MINUS)
 								total -= amountInCurrencyType;
@@ -118,10 +119,16 @@ export default new Endpoint(
 			});
 		} catch (error) {
 			console.log("Error", error);
-			const { message, status } = handleFirebaseError(error);
-			return response.status(status).send({
-				error: message,
-			});
+			if (error instanceof FirebaseError) {
+				const { message, status } = handleFirebaseError(error);
+				return response.status(status).send({
+					error: message,
+				});
+			} else {
+				return response.status(500).send({
+					error: "Internal Server Error",
+				});
+			}
 		}
 	}
 );

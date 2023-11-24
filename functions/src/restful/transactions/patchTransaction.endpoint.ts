@@ -7,6 +7,7 @@ import * as Firestore from "firebase-admin/firestore";
 import axios from "axios";
 import { OPEN_EXCHANGE_URL } from "../../constant";
 import * as functions from "firebase-functions";
+import { FirebaseError } from "firebase/app";
 
 interface TransactionBody {
 	amount: number;
@@ -150,10 +151,16 @@ export default new Endpoint(
 			});
 		} catch (error) {
 			console.log("Error", error);
-			const { message, status } = handleFirebaseError(error);
-			return response.status(status).send({
-				error: message,
-			});
+			if (error instanceof FirebaseError) {
+				const { message, status } = handleFirebaseError(error);
+				return response.status(status).send({
+					error: message,
+				});
+			} else {
+				return response.status(500).send({
+					error: "Internal Server Error",
+				});
+			}
 		}
 	}
 );

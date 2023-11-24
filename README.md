@@ -237,3 +237,4 @@ none
 }
 ```
 
+// "npm --prefix \"$RESOURCE_DIR\" run lint"

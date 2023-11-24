@@ -4,6 +4,7 @@ import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import { utcToZonedTime, format } from "date-fns-tz";
 import ja from "date-fns/locale/ja";
+import { FirebaseError } from "firebase/app";
 
 interface Transactions {
 	id: string;
@@ -97,10 +98,16 @@ export default new Endpoint(
 			});
 		} catch (error) {
 			console.log("Error", error);
-			const { message, status } = handleFirebaseError(error);
-			return response.status(status).send({
-				error: message,
-			});
+			if (error instanceof FirebaseError) {
+				const { message, status } = handleFirebaseError(error);
+				return response.status(status).send({
+					error: message,
+				});
+			} else {
+				return response.status(500).send({
+					error: "Internal Server Error",
+				});
+			}
 		}
 	}
 );

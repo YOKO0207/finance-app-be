@@ -4,6 +4,7 @@ import * as admin from "firebase-admin";
 import { handleFirebaseError } from "../../util";
 import * as Joi from "joi";
 import * as Firestore from "firebase-admin/firestore";
+import { FirebaseError } from "firebase/app";
 
 interface NoteBody {
 	note_title: string;
@@ -88,10 +89,16 @@ export default new Endpoint(
 			});
 		} catch (error) {
 			console.log("Error", error);
-			const { message, status } = handleFirebaseError(error);
-			return response.status(status).send({
-				error: message,
-			});
+			if (error instanceof FirebaseError) {
+				const { message, status } = handleFirebaseError(error);
+				return response.status(status).send({
+					error: message,
+				});
+			} else {
+				return response.status(500).send({
+					error: "Internal Server Error",
+				});
+			}
 		}
 	}
 );
