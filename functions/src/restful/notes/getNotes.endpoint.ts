@@ -60,9 +60,6 @@ export default new Endpoint(
 					const exchangeRatesMap = new Map(); // Cache exchange rates
 					for (const doc of transactionsQuerySnapshot.docs) {
 						if (typeof doc.data().amount === "number") {
-							// const firestoreTimestamp = doc.data()?.created_at; // Firestore Timestamp
-							// const dateObject = firestoreTimestamp.toDate();
-							// const formattedDate = dateObject.toISOString().split("T")[0]; // format to "YYYY-MM-DD"
 
 							let rates;
 							if (exchangeRatesMap.has(doc.data().historical_date)) {
